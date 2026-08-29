@@ -1,10 +1,12 @@
 """Capa de base de datos SQLite: conexiones con PRAGMAs seguros y helpers parametrizados."""
+import os
 import sqlite3
 import threading
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DB_PATH = BASE_DIR / "portal.db"
+# MITUBE_DB permite ubicar la BD en un volumen (Docker) o ruta personalizada
+DB_PATH = Path(os.environ.get("MITUBE_DB", BASE_DIR / "portal.db"))
 SCHEMA_PATH = Path(__file__).resolve().parent / "schema.sql"
 MEDIA_DIR = BASE_DIR / "media"
 

@@ -99,6 +99,24 @@ media-portal/
 - Rate limiting en login/registro/descargas; cabeceras `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` y CSP en HTML.
 - Frontend sin `innerHTML` con datos (solo `textContent`/`createElement`); errores amigables con el detalle técnico solo en el log del servidor.
 
+## Docker
+
+Imagen multi-arquitectura (**amd64 y arm64** — sirve en Jetson/Raspberry Pi) publicada en GHCR con cada push vía GitHub Actions: `ghcr.io/barraman/mitube:latest`.
+
+```bash
+# Con la imagen publicada
+mkdir -p data media
+ADMIN_INITIAL_PASSWORD='TuClave#Segura' docker compose up -d
+
+# O construyendo localmente
+docker compose up -d --build
+```
+
+- La BD persiste en `./data/portal.db` (variable `MITUBE_DB`) y la biblioteca en `./media` — puedes montar ahí un NFS de tu NAS.
+- FFmpeg va fijado dentro de la imagen; no hay dependencias del host.
+- El contenedor corre como usuario sin privilegios y expone el puerto **9000**.
+- Importación masiva dentro del contenedor: `docker exec -it mitube python import_media.py /app/media/entrada`.
+
 ## Despliegue en producción con nginx
 
 El directorio `deploy/` incluye la configuración lista:

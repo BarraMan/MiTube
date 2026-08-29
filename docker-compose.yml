@@ -1,0 +1,22 @@
+# MiTube con Docker Compose
+# Arranque rápido / quick start:
+#   ADMIN_INITIAL_PASSWORD='TuClave#Segura' docker compose up -d
+# La imagen publicada: ghcr.io/barraman/mitube:latest (amd64 + arm64)
+services:
+  mitube:
+    image: ghcr.io/barraman/mitube:latest
+    build: .
+    container_name: mitube
+    ports:
+      - "9000:9000"
+    environment:
+      # Contraseña del admin inicial (solo se usa la primera vez)
+      - ADMIN_INITIAL_PASSWORD=${ADMIN_INITIAL_PASSWORD:-}
+      - MITUBE_DB=/data/portal.db
+    volumes:
+      # Base de datos persistente / persistent database
+      - ./data:/data
+      # Tu biblioteca de medios (puede ser un montaje NFS del NAS)
+      # Your media library (can be an NFS mount from your NAS)
+      - ./media:/app/media
+    restart: unless-stopped
