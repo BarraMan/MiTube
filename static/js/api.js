@@ -4,7 +4,7 @@ import { store } from './ui.js';
 
 // En la vista previa de Perplexity el marcador se reescribe a la ruta del proxy;
 // en local y detrás de nginx queda sin reescribir y se usa el mismo origen (rutas relativas).
-const API = '__PORT_8000__'.startsWith('__') ? '' : '__PORT_8000__';
+const API = '__PORT_9000__'.startsWith('__') ? '' : '__PORT_9000__';
 
 let _token = null;
 

@@ -32,9 +32,9 @@ jobs:
 
       - name: Arrancar el servidor
         run: |
-          nohup python -m uvicorn server.main:app --host 127.0.0.1 --port 8000 > server.log 2>&1 &
+          nohup python -m uvicorn server.main:app --host 127.0.0.1 --port 9000 > server.log 2>&1 &
           for i in $(seq 1 30); do
-            curl -sf http://127.0.0.1:8000/api/health && break
+            curl -sf http://127.0.0.1:9000/api/health && break
             sleep 1
           done
 

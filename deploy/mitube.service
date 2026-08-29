@@ -16,7 +16,7 @@ WorkingDirectory=/opt/mitube
 Environment=PATH=/opt/mitube/.venv/bin:/usr/bin
 # --proxy-headers hace que uvicorn tome la IP real desde X-Forwarded-For de nginx
 ExecStart=/opt/mitube/.venv/bin/python -m uvicorn server.main:app \
-    --host 127.0.0.1 --port 8000 \
+    --host 127.0.0.1 --port 9000 \
     --proxy-headers --forwarded-allow-ips 127.0.0.1
 Restart=on-failure
 RestartSec=3

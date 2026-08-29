@@ -1,4 +1,4 @@
-"""Pruebas del portal contra el servidor en ejecución (http://localhost:8000).
+"""Pruebas del portal contra el servidor en ejecución (http://localhost:9000).
 Ejecutar: python -m pytest tests/ -v  (el servidor debe estar arrancado)."""
 import os
 import subprocess
@@ -9,7 +9,7 @@ from pathlib import Path
 import httpx
 import pytest
 
-BASE = os.environ.get("PORTAL_URL", "http://localhost:8000")
+BASE = os.environ.get("PORTAL_URL", "http://localhost:9000")
 ADMIN_PASS = os.environ.get("ADMIN_INITIAL_PASSWORD", "CambiaEstaClave#2026")
 
 

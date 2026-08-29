@@ -2,6 +2,8 @@
 
 ![Pruebas](https://github.com/BarraMan/MiTube/actions/workflows/tests.yml/badge.svg)
 
+**Español** · [English](README.en.md)
+
 Portal responsivo de reproducción de música y video con **switch Audio/Video en tiempo real**, modo cinema, cola con autoplay, buscador global, descargas y panel de administración. Backend FastAPI + SQLite; frontend HTML/CSS/JS vanilla en modo oscuro.
 
 ## Capturas
@@ -34,10 +36,10 @@ ADMIN_INITIAL_PASSWORD='TuClaveSegura#2026' python seed.py
 python make_samples.py
 
 # 3. Arrancar el servidor
-python -m uvicorn server.main:app --host 0.0.0.0 --port 8000
+python -m uvicorn server.main:app --host 0.0.0.0 --port 9000
 ```
 
-Abre `http://localhost:8000` en el navegador.
+Abre `http://localhost:9000` en el navegador.
 
 ## Importación masiva (con fusión de modalidades)
 
@@ -128,7 +130,7 @@ sudo nginx -t && sudo systemctl reload nginx
 
 Detalles ya resueltos en la configuración incluida:
 
-- nginx sirve `static/` directamente y proxya `/api/` a uvicorn en `127.0.0.1:8000` (uvicorn nunca queda expuesto).
+- nginx sirve `static/` directamente y proxya `/api/` a uvicorn en `127.0.0.1:9000` (uvicorn nunca queda expuesto).
 - `proxy_buffering off` + `proxy_request_buffering off`: el streaming con Range Requests y las subidas fluyen sin buffering a disco.
 - `client_max_body_size 512m` para las subidas del panel admin (el límite de la app es 500 MB).
 - `--proxy-headers --forwarded-allow-ips 127.0.0.1` en uvicorn: el rate limiting ve la IP real del cliente vía `X-Forwarded-For`.
