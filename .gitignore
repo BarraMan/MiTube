@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+portal.db
+portal.db-wal
+portal.db-shm
+media/video/*
+media/audio/*
+media/covers/*
+!media/video/.gitkeep
+!media/audio/.gitkeep
+!media/covers/.gitkeep
+.env

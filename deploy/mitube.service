@@ -1,0 +1,32 @@
+# /etc/systemd/system/mitube.service
+# Servicio systemd para el portal MiTube.
+# Instalación:
+#   sudo cp deploy/mitube.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now mitube
+[Unit]
+Description=MiTube — Portal Multimedia (FastAPI/uvicorn)
+After=network.target
+
+[Service]
+Type=simple
+# Usuario sin privilegios dedicado al servicio (créalo con: sudo useradd -r -s /usr/sbin/nologin mitube)
+User=mitube
+Group=mitube
+WorkingDirectory=/opt/mitube
+Environment=PATH=/opt/mitube/.venv/bin:/usr/bin
+# --proxy-headers hace que uvicorn tome la IP real desde X-Forwarded-For de nginx
+ExecStart=/opt/mitube/.venv/bin/python -m uvicorn server.main:app \
+    --host 127.0.0.1 --port 8000 \
+    --proxy-headers --forwarded-allow-ips 127.0.0.1
+Restart=on-failure
+RestartSec=3
+
+# Endurecimiento del servicio
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=read-only
+PrivateTmp=true
+ReadWritePaths=/opt/mitube
+
+[Install]
+WantedBy=multi-user.target

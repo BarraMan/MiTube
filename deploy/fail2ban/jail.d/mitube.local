@@ -1,0 +1,53 @@
+# /etc/fail2ban/jail.d/mitube.local
+# Jails de fail2ban para el portal MiTube detrás de nginx.
+# Instalación:
+#   sudo cp deploy/fail2ban/filter.d/*.conf /etc/fail2ban/filter.d/
+#   sudo cp deploy/fail2ban/jail.d/mitube.local /etc/fail2ban/jail.d/
+#   sudo fail2ban-client reload
+# Verificación:
+#   sudo fail2ban-client status mitube-auth
+#   sudo fail2ban-regex /var/log/nginx/access.log /etc/fail2ban/filter.d/mitube-auth.conf
+
+[DEFAULT]
+# Nunca banear la propia LAN ni localhost (ajusta a tu red)
+ignoreip = 127.0.0.1/8 ::1 192.168.0.0/16 10.0.0.0/8
+
+[mitube-auth]
+# Fuerza bruta contra login/registro
+enabled  = true
+port     = http,https
+filter   = mitube-auth
+logpath  = /var/log/nginx/access.log
+backend  = auto
+maxretry = 8
+findtime = 10m
+bantime  = 1h
+# Ban incremental: cada reincidencia duplica el tiempo, hasta 1 semana
+bantime.increment = true
+bantime.factor    = 2
+bantime.maxtime   = 1w
+action   = %(action_)s
+
+[mitube-probe]
+# Escaneo de rutas de la API y sondeo del panel admin
+enabled  = true
+port     = http,https
+filter   = mitube-probe
+logpath  = /var/log/nginx/access.log
+backend  = auto
+maxretry = 20
+findtime = 5m
+bantime  = 30m
+bantime.increment = true
+bantime.factor    = 2
+bantime.maxtime   = 1d
+action   = %(action_)s
+
+# Reincidentes: quien ya fue baneado varias veces por cualquier jail
+[recidive]
+enabled  = true
+logpath  = /var/log/fail2ban.log
+banaction = %(banaction_allports)s
+bantime  = 1w
+findtime = 1d
+maxretry = 3

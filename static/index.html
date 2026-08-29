@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiTube — Portal Multimedia</title>
+<link rel="preconnect" href="https://api.fontshare.com">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ff3d6e'/%3E%3Cpath d='M12 9v14l11-7z' fill='%230b0b10'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<!-- ============ VISTA DE AUTENTICACIÓN ============ -->
+<div id="auth-view" class="auth-view hidden">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <svg aria-label="MiTube" viewBox="0 0 48 48" width="56" height="56" fill="none">
+        <rect width="48" height="48" rx="12" fill="var(--accent)"/>
+        <path d="M18 14v20l16-10z" fill="#0b0b10"/>
+        <path d="M10 20v8M40 18v12" stroke="#0b0b10" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <h1>MiTube</h1>
+      <p class="muted">Tu música y tus videos, en un solo lugar.</p>
+    </div>
+    <div class="auth-tabs" role="tablist">
+      <button id="tab-login" class="auth-tab active" role="tab">Iniciar sesión</button>
+      <button id="tab-register" class="auth-tab" role="tab">Crear cuenta</button>
+    </div>
+    <form id="login-form" class="auth-form" novalidate>
+      <label>Usuario o correo
+        <input name="username" type="text" autocomplete="username" required maxlength="254">
+      </label>
+      <label>Contraseña
+        <input name="password" type="password" autocomplete="current-password" required maxlength="256">
+      </label>
+      <button type="submit" class="btn-primary">Entrar</button>
+    </form>
+    <form id="register-form" class="auth-form hidden" novalidate>
+      <label>Usuario <span class="hint">(3-32 letras, números o _)</span>
+        <input name="username" type="text" autocomplete="username" required maxlength="32">
+      </label>
+      <label>Correo electrónico
+        <input name="email" type="email" autocomplete="email" required maxlength="254">
+      </label>
+      <label>Contraseña <span class="hint">(mín. 10, mayúscula, minúscula, dígito y símbolo)</span>
+        <input name="password" type="password" autocomplete="new-password" required maxlength="256">
+      </label>
+      <label>Confirmar contraseña
+        <input name="password2" type="password" autocomplete="new-password" required maxlength="256">
+      </label>
+      <button type="submit" class="btn-primary">Registrarme</button>
+    </form>
+    <p id="auth-error" class="form-error" role="alert"></p>
+  </div>
+</div>
+
+<!-- ============ APLICACIÓN PRINCIPAL ============ -->
+<div id="app-view" class="app-view hidden">
+  <header class="topbar">
+    <div class="brand">
+      <svg aria-label="MiTube" viewBox="0 0 48 48" width="34" height="34" fill="none">
+        <rect width="48" height="48" rx="12" fill="var(--accent)"/>
+        <path d="M18 14v20l16-10z" fill="#0b0b10"/>
+        <path d="M10 20v8M40 18v12" stroke="#0b0b10" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <span class="brand-name">MiTube</span>
+    </div>
+    <div class="searchbox">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+      </svg>
+      <input id="search-input" type="search" placeholder="Buscar por título, artista o álbum…" aria-label="Buscar" maxlength="100">
+    </div>
+    <div class="user-menu">
+      <button id="btn-admin" class="btn-ghost hidden" title="Panel de administración">Admin</button>
+      <span id="user-name" class="user-name"></span>
+      <button id="btn-logout" class="btn-ghost" title="Cerrar sesión">Salir</button>
+    </div>
+  </header>
+
+  <main id="layout" class="layout">
+    <!-- Columna del reproductor -->
+    <section class="player-col" aria-label="Reproductor">
+      <div id="player-shell" class="player-shell">
+        <video id="media-el" playsinline preload="metadata"></video>
+        <div id="cover-pane" class="cover-pane hidden">
+          <img id="cover-img" alt="Portada del álbum">
+          <div class="cover-glow" aria-hidden="true"></div>
+        </div>
+        <div id="player-empty" class="player-empty">
+          <p>Selecciona un tema de la lista para comenzar</p>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="seek-row">
+          <span id="time-cur" class="time">0:00</span>
+          <input id="seek" type="range" min="0" max="1000" value="0" aria-label="Posición de reproducción">
+          <span id="time-dur" class="time">0:00</span>
+        </div>
+        <div class="controls-row">
+          <div class="ctrl-left">
+            <button id="btn-prev" class="btn-icon" title="Anterior" aria-label="Anterior">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>
+            </button>
+            <button id="btn-play" class="btn-icon btn-play" title="Reproducir/Pausa" aria-label="Reproducir o pausar">
+              <svg id="ic-play" viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              <svg id="ic-pause" class="hidden" viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+            </button>
+            <button id="btn-next" class="btn-icon" title="Siguiente" aria-label="Siguiente">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg>
+            </button>
+            <div class="volume-wrap">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg>
+              <input id="volume" type="range" min="0" max="100" value="80" aria-label="Volumen">
+            </div>
+          </div>
+          <div class="ctrl-right">
+            <div class="av-switch" role="group" aria-label="Modo de reproducción">
+              <span class="av-label">Audio</span>
+              <button id="av-toggle" class="toggle" role="switch" aria-checked="true" aria-label="Cambiar entre audio y video">
+                <span class="toggle-knob"></span>
+              </button>
+              <span class="av-label">Video</span>
+            </div>
+            <button id="btn-cinema" class="btn-icon" title="Modo cinema" aria-label="Modo cinema">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="track-info" class="track-info hidden">
+        <div class="ti-main">
+          <h2 id="ti-title"></h2>
+          <p id="ti-artist" class="ti-artist"></p>
+          <div class="ti-meta">
+            <span id="ti-album" class="chip"></span>
+            <span id="ti-year" class="chip"></span>
+            <span id="ti-genre" class="chip chip-accent"></span>
+            <span id="ti-plays" class="chip"></span>
+          </div>
+        </div>
+        <div class="ti-actions dropdown-host">
+          <button id="btn-download-current" class="btn-primary btn-download">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v12m0 0 5-5m-5 5-5-5M4 20h16"/></svg>
+            Descargar tema actual
+          </button>
+          <div id="dl-current-menu" class="dropdown hidden" role="menu"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Columna lateral: filtros + lista -->
+    <aside class="side-col" aria-label="Biblioteca">
+      <nav id="filter-bar" class="filter-bar" aria-label="Categorías">
+        <button class="filter-btn active" data-filter="all">Todos</button>
+        <button class="filter-btn" data-filter="genres">Géneros</button>
+        <button class="filter-btn" data-filter="artists">Artistas</button>
+        <button class="filter-btn" data-filter="albums">Álbumes</button>
+      </nav>
+      <div id="subfilter" class="subfilter hidden"></div>
+      <div class="list-tools">
+        <label class="sort-label">Ordenar
+          <select id="sort-select" aria-label="Ordenar lista">
+            <option value="recent">Añadidos recientemente</option>
+            <option value="title">Alfabético (título)</option>
+            <option value="artist">Alfabético (artista)</option>
+            <option value="year">Año de lanzamiento</option>
+            <option value="plays">Más reproducidos</option>
+          </select>
+        </label>
+        <span id="list-count" class="muted small"></span>
+      </div>
+      <ul id="playlist" class="playlist" role="list"></ul>
+      <div id="list-empty" class="list-empty hidden">No hay resultados.</div>
+    </aside>
+  </main>
+</div>
+
+<!-- ============ PANEL DE ADMINISTRACIÓN ============ -->
+<div id="admin-view" class="admin-view hidden">
+  <header class="topbar">
+    <div class="brand">
+      <svg aria-label="MiTube" viewBox="0 0 48 48" width="34" height="34" fill="none">
+        <rect width="48" height="48" rx="12" fill="var(--accent)"/>
+        <path d="M18 14v20l16-10z" fill="#0b0b10"/>
+        <path d="M10 20v8M40 18v12" stroke="#0b0b10" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <span class="brand-name">MiTube · Admin</span>
+    </div>
+    <div></div>
+    <div class="user-menu">
+      <button id="btn-back-app" class="btn-ghost">← Volver al portal</button>
+    </div>
+  </header>
+  <main class="admin-main">
+    <nav class="admin-tabs">
+      <button class="admin-tab active" data-tab="library">Biblioteca</button>
+      <button class="admin-tab" data-tab="genres">Géneros</button>
+      <button class="admin-tab" data-tab="users">Usuarios</button>
+    </nav>
+
+    <section id="admin-library" class="admin-panel">
+      <h2>Subir nuevo medio</h2>
+      <form id="upload-form" class="admin-form">
+        <div class="form-grid">
+          <label>Archivo (mp4, mp3, m4a, flac) *
+            <input name="media" type="file" accept=".mp4,.mp3,.m4a,.flac" required>
+          </label>
+          <label>Portada (jpg, png, webp — opcional)
+            <input name="cover" type="file" accept=".jpg,.jpeg,.png,.webp">
+          </label>
+          <label>Título *
+            <input name="title" type="text" required maxlength="160">
+          </label>
+          <label>Artista *
+            <input name="artist" type="text" required maxlength="120" list="artists-list">
+            <datalist id="artists-list"></datalist>
+          </label>
+          <label>Álbum
+            <input name="album" type="text" maxlength="160" list="albums-list">
+            <datalist id="albums-list"></datalist>
+          </label>
+          <label>Año
+            <input name="year" type="number" min="1900" max="2100">
+          </label>
+          <label>Género
+            <select name="genre_id"><option value="">— Sin género —</option></select>
+          </label>
+        </div>
+        <div class="upload-row">
+          <button type="submit" class="btn-primary">Subir a la biblioteca</button>
+          <progress id="upload-progress" class="hidden" max="100" value="0"></progress>
+          <span id="upload-status" class="muted small"></span>
+        </div>
+        <p class="hint">Nota: en esta vista previa desplegada, el proxy limita las subidas a 10 MB por petición.</p>
+      </form>
+      <h2>Temas en la biblioteca</h2>
+      <div class="table-wrap">
+        <table class="admin-table" id="tracks-table">
+          <thead><tr><th>Título</th><th>Artista</th><th>Álbum</th><th>Año</th><th>Género</th><th>Repr.</th><th>Video</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="admin-genres" class="admin-panel hidden">
+      <h2>Géneros</h2>
+      <form id="genre-form" class="inline-form">
+        <input name="name" type="text" placeholder="Nuevo género…" required maxlength="60">
+        <button type="submit" class="btn-primary">Añadir</button>
+      </form>
+      <ul id="genres-list" class="admin-list"></ul>
+    </section>
+
+    <section id="admin-users" class="admin-panel hidden">
+      <h2>Usuarios</h2>
+      <form id="user-form" class="admin-form">
+        <div class="form-grid">
+          <label>Usuario * <input name="username" type="text" required maxlength="32"></label>
+          <label>Correo * <input name="email" type="email" required maxlength="254"></label>
+          <label>Contraseña * <input name="password" type="password" required maxlength="256"></label>
+          <label>Rol
+            <select name="role"><option value="user">user</option><option value="admin">admin</option></select>
+          </label>
+        </div>
+        <button type="submit" class="btn-primary">Crear usuario</button>
+      </form>
+      <div class="table-wrap">
+        <table class="admin-table" id="users-table">
+          <thead><tr><th>ID</th><th>Usuario</th><th>Correo</th><th>Rol</th><th>Estado</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="toast" class="toast hidden" role="status"></div>
+
+<!-- Diálogo de edición de tema -->
+<dialog id="edit-dialog" class="edit-dialog">
+  <form id="edit-form" method="dialog" class="admin-form">
+    <h3>Editar tema</h3>
+    <div class="form-grid">
+      <label>Título * <input name="title" required maxlength="160"></label>
+      <label>Artista * <input name="artist" required maxlength="120"></label>
+      <label>Álbum <input name="album" maxlength="160"></label>
+      <label>Año <input name="year" type="number" min="1900" max="2100"></label>
+      <label>Género <select name="genre_id"><option value="">— Sin género —</option></select></label>
+    </div>
+    <div class="dialog-actions">
+      <button type="button" id="edit-cancel" class="btn-ghost">Cancelar</button>
+      <button type="submit" class="btn-primary">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
