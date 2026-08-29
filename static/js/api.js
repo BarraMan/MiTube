@@ -68,6 +68,7 @@ function uploadWithProgress(path, formData, headers, onProgress) {
 }
 
 export const api = {
+  config: () => request('/api/auth/config'),
   register: (d) => request('/api/auth/register', { method: 'POST', body: d }),
   login: (d) => request('/api/auth/login', { method: 'POST', body: d }),
   logout: () => request('/api/auth/logout', { method: 'POST' }),
@@ -77,6 +78,8 @@ export const api = {
   meta: () => request('/api/meta'),
   registerPlay: (id) => request(`/api/tracks/${id}/play`, { method: 'POST' }),
   admin: {
+    settings: () => request('/api/admin/settings'),
+    updateSettings: (d) => request('/api/admin/settings', { method: 'PUT', body: d }),
     users: () => request('/api/admin/users'),
     createUser: (d) => request('/api/admin/users', { method: 'POST', body: d }),
     updateUser: (id, d) => request(`/api/admin/users/${id}`, { method: 'PUT', body: d }),

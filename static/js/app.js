@@ -290,12 +290,22 @@ function bindLibraryControls() {
 
 // ---------- Arranque ----------
 
+async function applyPublicConfig() {
+  try {
+    const cfg = await api.config();
+    const allowed = !!cfg.public_registration;
+    $('tab-register').classList.toggle('hidden', !allowed);
+    if (!allowed) switchAuthTab(true); // forzar pestaña de login
+  } catch { /* si falla, se deja el comportamiento por defecto */ }
+}
+
 async function boot() {
   bindAuth();
   bindLibraryControls();
   bindGlobalDropdownClose();
   initPlayer({ onTrackChange: () => paintList() });
-  initAdmin({ notifyLibraryChanged: refreshMeta });
+  initAdmin({ notifyLibraryChanged: refreshMeta, onSettingsChanged: applyPublicConfig });
+  applyPublicConfig();
 
   const token = getToken();
   if (token) {

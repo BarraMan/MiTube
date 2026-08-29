@@ -60,3 +60,13 @@ def execute(sql: str, params: tuple = ()) -> int:
 def escape_like(value: str) -> str:
     """Escapa % y _ para usarse con LIKE ... ESCAPE '\\'."""
     return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
+def get_setting(key: str, default: str = "") -> str:
+    row = q1("SELECT value FROM settings WHERE key = ?", (key,))
+    return row["value"] if row else default
+
+
+def set_setting(key: str, value: str) -> None:
+    execute("INSERT INTO settings (key, value) VALUES (?,?) "
+            "ON CONFLICT(key) DO UPDATE SET value = excluded.value", (key, value))

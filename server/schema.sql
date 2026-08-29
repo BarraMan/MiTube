@@ -60,6 +60,12 @@ CREATE TABLE IF NOT EXISTS sessions (
     ip TEXT
 );
 
+CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);
+INSERT OR IGNORE INTO settings (key, value) VALUES ('public_registration', '1');
+
 CREATE TABLE IF NOT EXISTS play_events (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     track_id INTEGER NOT NULL REFERENCES tracks(id) ON DELETE CASCADE,

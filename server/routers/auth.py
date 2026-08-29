@@ -4,7 +4,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 
-from ..database import execute, q1
+from ..database import execute, get_setting, q1
 from ..security import (
     EMAIL_RE, USERNAME_RE, create_session, current_user, destroy_session,
     hash_password, is_locked, purge_expired_sessions, register_failed_login,
@@ -32,8 +32,17 @@ def _public_user(u) -> dict:
     return {"id": u["id"], "username": u["username"], "email": u["email"], "role": u["role"]}
 
 
+@router.get("/config")
+def public_config():
+    """Configuración pública mínima para la pantalla de acceso (sin datos sensibles)."""
+    return {"public_registration": get_setting("public_registration", "1") == "1"}
+
+
 @router.post("/register", status_code=201)
 def register(data: RegisterIn, request: Request):
+    if get_setting("public_registration", "1") != "1":
+        log.warning("Intento de registro con el registro público deshabilitado")
+        raise HTTPException(403, "El registro público está deshabilitado. Contacta al administrador.")
     # Validación redundante en backend (el frontend ya validó)
     if not USERNAME_RE.match(data.username):
         raise HTTPException(400, "Usuario inválido: 3-32 caracteres alfanuméricos o _.")

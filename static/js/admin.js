@@ -5,10 +5,12 @@ import { elFrom, toast } from './ui.js';
 const $ = (id) => document.getElementById(id);
 let meta = { genres: [], artists: [], albums: [] };
 let notifyLibraryChanged = () => {};
+let onSettingsChanged = () => {};
 let editingTrackId = null;
 
 export function initAdmin(opts) {
   notifyLibraryChanged = opts.notifyLibraryChanged || notifyLibraryChanged;
+  onSettingsChanged = opts.onSettingsChanged || onSettingsChanged;
 
   document.querySelectorAll('.admin-tab').forEach((tab) => {
     tab.addEventListener('click', () => {
@@ -24,10 +26,35 @@ export function initAdmin(opts) {
   bindGenreForm();
   bindUserForm();
   bindEditDialog();
+  bindSettings();
 }
 
 export async function showAdmin() {
-  await Promise.all([loadMetaIntoForms(), loadTracksTable(), loadGenresList(), loadUsersTable()]);
+  await Promise.all([loadMetaIntoForms(), loadTracksTable(), loadGenresList(), loadUsersTable(), loadSettings()]);
+}
+
+// ---------- Configuración del portal ----------
+
+async function loadSettings() {
+  try {
+    const s = await api.admin.settings();
+    $('reg-toggle').setAttribute('aria-checked', s.public_registration ? 'true' : 'false');
+  } catch { /* sin permisos o error de red: el toggle queda como esté */ }
+}
+
+function bindSettings() {
+  $('reg-toggle').addEventListener('click', async () => {
+    const t = $('reg-toggle');
+    const enable = t.getAttribute('aria-checked') !== 'true';
+    try {
+      const res = await api.admin.updateSettings({ public_registration: enable });
+      t.setAttribute('aria-checked', res.public_registration ? 'true' : 'false');
+      toast(res.public_registration
+        ? 'Registro público ACTIVADO: cualquiera puede crear cuenta.'
+        : 'Registro público DESACTIVADO: solo los admins crean cuentas.');
+      onSettingsChanged();
+    } catch (err) { toast(errMsg(err, 'No se pudo cambiar la configuración.'), true); }
+  });
 }
 
 function errMsg(err, fallback) {

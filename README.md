@@ -79,6 +79,7 @@ media-portal/
 - Bloqueo de cuenta 15 min tras 5 intentos fallidos; mensajes de error genéricos.
 - 100% SQL parametrizado; `LIKE` con escape de `%`/`_`; orden por lista blanca.
 - Autorización por rol verificada en backend en cada endpoint admin (403 real, no solo UI).
+- **Registro público activable/desactivable** desde el panel admin (pestaña Usuarios): al desactivarlo, la pantalla de acceso oculta "Crear cuenta" y el backend rechaza los registros con 403; los administradores siguen creando cuentas desde el panel. Persistido en la tabla `settings`.
 - Subidas: lista blanca de extensiones + **magic bytes** + validación ffprobe + renombrado UUID + límite de tamaño + hash anti-duplicados. FFmpeg siempre con lista de argumentos (nunca `shell=True`).
 - Anti path-traversal redundante: el cliente solo envía IDs; las rutas de BD se re-validan contra `media/` con `Path.resolve()`.
 - Rate limiting en login/registro/descargas; cabeceras `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` y CSP en HTML.

@@ -256,6 +256,16 @@
     </section>
 
     <section id="admin-users" class="admin-panel hidden">
+      <h2>Configuración de acceso</h2>
+      <div class="admin-form settings-row">
+        <div>
+          <strong>Registro público de usuarios</strong>
+          <p class="hint">Si se desactiva, la pantalla de acceso oculta "Crear cuenta" y el backend rechaza nuevos registros (403). Los administradores siguen pudiendo crear cuentas desde este panel.</p>
+        </div>
+        <button id="reg-toggle" class="toggle" role="switch" aria-checked="true" aria-label="Activar o desactivar el registro público">
+          <span class="toggle-knob"></span>
+        </button>
+      </div>
       <h2>Usuarios</h2>
       <form id="user-form" class="admin-form">
         <div class="form-grid">

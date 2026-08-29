@@ -7,7 +7,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, Form, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 
-from ..database import execute, q, q1
+from ..database import execute, get_setting, q, q1, set_setting
 from ..library import (
     AUDIO_UPGRADED, CREATED, DUP_FILE, DUP_MODALITY, VIDEO_ATTACHED,
     get_or_create_album, get_or_create_artist, ingest,
@@ -95,6 +95,25 @@ def delete_user(user_id: int, admin=Depends(admin_user)):
     execute("DELETE FROM users WHERE id = ?", (user_id,))
     log.info("Usuario eliminado id=%s por admin=%s", user_id, admin["id"])
     return {"ok": True}
+
+
+# ---------- Configuración del portal ----------
+
+class SettingsIn(BaseModel):
+    public_registration: bool
+
+
+@router.get("/settings")
+def get_settings(admin=Depends(admin_user)):
+    return {"public_registration": get_setting("public_registration", "1") == "1"}
+
+
+@router.put("/settings")
+def update_settings(data: SettingsIn, admin=Depends(admin_user)):
+    set_setting("public_registration", "1" if data.public_registration else "0")
+    log.info("Registro público %s por admin=%s",
+             "activado" if data.public_registration else "desactivado", admin["id"])
+    return {"ok": True, "public_registration": data.public_registration}
 
 
 # ---------- Géneros ----------

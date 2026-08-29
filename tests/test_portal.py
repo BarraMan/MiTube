@@ -192,6 +192,39 @@ def test_admin_cannot_delete_self(client, admin_token):
     assert r.status_code == 400
 
 
+# ---------- Registro público activable/desactivable ----------
+
+def test_settings_admin_only(client, user_token):
+    assert client.get("/api/admin/settings", headers=auth(user_token)).status_code == 403
+    r = client.put("/api/admin/settings", json={"public_registration": False}, headers=auth(user_token))
+    assert r.status_code == 403
+
+
+def test_registration_toggle(client, admin_token):
+    try:
+        # Desactivar: el registro público debe rechazarse con 403
+        r = client.put("/api/admin/settings", json={"public_registration": False}, headers=auth(admin_token))
+        assert r.status_code == 200 and r.json()["public_registration"] is False
+        assert client.get("/api/auth/config").json()["public_registration"] is False
+        name = f"reg{uuid.uuid4().hex[:9]}"
+        r = client.post("/api/auth/register", json={
+            "username": name, "email": f"{name}@t.mx", "password": "Segura#2026xY"})
+        assert r.status_code == 403
+        # El admin sigue pudiendo crear cuentas desde el panel
+        r = client.post("/api/admin/users", json={
+            "username": name, "email": f"{name}@t.mx", "password": "Segura#2026xY",
+            "role": "user", "is_active": True}, headers=auth(admin_token))
+        assert r.status_code == 201
+    finally:
+        # Reactivar para no afectar otras pruebas
+        client.put("/api/admin/settings", json={"public_registration": True}, headers=auth(admin_token))
+    assert client.get("/api/auth/config").json()["public_registration"] is True
+    name2 = f"reg{uuid.uuid4().hex[:9]}"
+    r = client.post("/api/auth/register", json={
+        "username": name2, "email": f"{name2}@t.mx", "password": "Segura#2026xY"})
+    assert r.status_code == 201
+
+
 # ---------- Fusión de modalidades (sin duplicados en la lista) ----------
 
 @pytest.fixture(scope="module")

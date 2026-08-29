@@ -350,6 +350,13 @@ input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 
 .status-pill.off { background: rgba(255,60,80,.13); color: #ff7788; }
 progress { accent-color: var(--accent); width: 200px; }
 
+/* Fila de configuración con interruptor */
+.settings-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 18px;
+  max-width: 640px;
+}
+.settings-row .hint { margin-top: 4px; max-width: 460px; }
+
 /* Diálogo */
 .edit-dialog { background: transparent; border: 0; padding: 0; }
 .edit-dialog::backdrop { background: rgba(0,0,0,.6); backdrop-filter: blur(3px); }
