@@ -1,0 +1,46 @@
+name: tests
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      ADMIN_INITIAL_PASSWORD: CI#Pruebas2026x
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Inicializar BD y admin
+        run: python seed.py
+
+      - name: Generar contenido de demostración
+        run: python make_samples.py
+
+      - name: Arrancar el servidor
+        run: |
+          nohup python -m uvicorn server.main:app --host 127.0.0.1 --port 8000 > server.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8000/api/health && break
+            sleep 1
+          done
+
+      - name: Ejecutar pruebas
+        run: python -m pytest tests/ -v
+
+      - name: Log del servidor si algo falló
+        if: failure()
+        run: cat server.log

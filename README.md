@@ -1,6 +1,18 @@
 # MiTube — Portal Multimedia (estilo YouTube Music)
 
+![Pruebas](https://github.com/BarraMan/MiTube/actions/workflows/tests.yml/badge.svg)
+
 Portal responsivo de reproducción de música y video con **switch Audio/Video en tiempo real**, modo cinema, cola con autoplay, buscador global, descargas y panel de administración. Backend FastAPI + SQLite; frontend HTML/CSS/JS vanilla en modo oscuro.
+
+## Capturas
+
+| Reproduciendo video | Modo audio (misma pista, sin cortes) |
+|---|---|
+| ![Reproductor en modo video](docs/player-video.png) | ![Reproductor en modo audio con portada](docs/player-audio.png) |
+
+| Panel de administración | Móvil |
+|---|---|
+| ![Panel de administración](docs/admin.png) | ![Vista móvil](docs/mobile.png) |
 
 ## Requisitos
 
