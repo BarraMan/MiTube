@@ -280,6 +280,18 @@ async function loadUsersTable() {
         await loadUsersTable();
       } catch (err) { toast(errMsg(err, 'Error al actualizar.'), true); }
     });
+    const pw = elFrom('button', 'btn-mini', 'Cambiar contraseña');
+    pw.addEventListener('click', async () => {
+      const newPw = prompt(`Nueva contraseña para "${u.username}" (mín. 10, mayúscula, minúscula, dígito y símbolo):`);
+      if (!newPw) return;
+      if (newPw.length < 10) { toast('La contraseña debe tener al menos 10 caracteres.', true); return; }
+      try {
+        await api.admin.updateUser(u.id, {
+          username: u.username, email: u.email, role: u.role, is_active: u.is_active, password: newPw,
+        });
+        toast(`Contraseña de "${u.username}" actualizada.`);
+      } catch (err) { toast(errMsg(err, 'No se pudo cambiar la contraseña.'), true); }
+    });
     const del = elFrom('button', 'btn-mini danger', 'Eliminar');
     del.addEventListener('click', async () => {
       if (!confirm(`¿Eliminar la cuenta "${u.username}"? Esta acción no se puede deshacer.`)) return;
@@ -289,7 +301,7 @@ async function loadUsersTable() {
         await loadUsersTable();
       } catch (err) { toast(errMsg(err, 'No se pudo eliminar.'), true); }
     });
-    actions.append(susp, ' ', del);
+    actions.append(susp, ' ', pw, ' ', del);
     tr.appendChild(actions);
     tbody.appendChild(tr);
   }

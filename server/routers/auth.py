@@ -95,3 +95,26 @@ def logout(request: Request, user=Depends(current_user)):
 @router.get("/me")
 def me(user=Depends(current_user)):
     return _public_user(user)
+
+
+class ChangePasswordIn(BaseModel):
+    current: str = Field(min_length=1, max_length=256)
+    new: str = Field(min_length=10, max_length=128)
+
+
+@router.post("/change-password")
+def change_password(data: ChangePasswordIn, request: Request, user=Depends(current_user)):
+    """Cambia la propia contraseña. Verifica la actual y re-valida la nueva."""
+    if not verify_password(user["password_hash"], data.current):
+        raise HTTPException(401, "La contraseña actual no es correcta.")
+    err = validate_password_strength(data.new)
+    if err:
+        raise HTTPException(400, err)
+    if data.current == data.new:
+        raise HTTPException(400, "La nueva contraseña debe ser distinta de la actual.")
+    execute("UPDATE users SET password_hash = ? WHERE id = ?",
+          (hash_password(data.new), user["id"]))
+    # Cambiar la contraseña limpia el bloqueo por intentos fallidos
+    reset_failed_logins(user["id"])
+    log.info("Contraseña cambiada por el usuario id=%s", user["id"])
+    return {"ok": True}

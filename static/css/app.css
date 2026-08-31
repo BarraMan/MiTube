@@ -391,3 +391,17 @@ progress { accent-color: var(--accent); width: 200px; }
   .controls-row { justify-content: center; }
   .volume-wrap { display: none; }
 }
+
+/* ---------- Paginación de la lista (100 por página) ---------- */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.pagination .btn-ghost { flex: 1; }
+.pagination .btn-ghost:disabled { opacity: .4; cursor: not-allowed; }
+#page-info { text-align: center; white-space: nowrap; }

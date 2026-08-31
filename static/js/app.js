@@ -12,8 +12,10 @@ const ui = {
   subId: null,         // id de género/artista/álbum activo
   sort: 'recent',
   search: '',
+  page: 1,             // página actual de la lista
   meta: { genres: [], artists: [], albums: [] },
   tracks: [],
+  total: 0,            // nº total de temas (para paginación)
 };
 
 // ---------- Autenticación ----------
@@ -107,7 +109,7 @@ async function refreshMeta() {
 }
 
 function currentParams() {
-  const p = { sort: ui.sort };
+  const p = { sort: ui.sort, page: ui.page, per_page: 100 };
   if (ui.search) p.q = ui.search;
   if (ui.subId != null) {
     if (ui.filter === 'genres') p.genre_id = ui.subId;
@@ -121,10 +123,15 @@ async function refreshTracks() {
   const list = $('playlist');
   list.replaceChildren(...Array.from({ length: 6 }, () => elFrom('li', 'skeleton')));
   try {
-    const { tracks } = await api.tracks(currentParams());
+    const { tracks, total, page, has_next, has_prev } = await api.tracks(currentParams());
     ui.tracks = tracks;
+    ui.total = total || 0;
+    ui.page = page || 1;
+    ui.has_next = has_next;
+    ui.has_prev = has_prev;
     setQueue(tracks);
     paintList();
+    paintPagination();
   } catch (err) {
     list.replaceChildren();
     if (err instanceof ApiError && err.status === 401) { setToken(null); showView('auth'); return; }
@@ -144,6 +151,7 @@ function paintSubfilter() {
     const b = elFrom('button', ui.subId === item.id ? 'active' : '', label);
     b.addEventListener('click', () => {
       ui.subId = ui.subId === item.id ? null : item.id;
+      ui.page = 1;
       paintSubfilter();
       refreshTracks();
     });
@@ -255,6 +263,7 @@ function bindLibraryControls() {
       btn.classList.add('active');
       ui.filter = btn.dataset.filter;
       ui.subId = null;
+      ui.page = 1;
       paintSubfilter();
       refreshTracks();
     });
@@ -262,11 +271,13 @@ function bindLibraryControls() {
 
   $('sort-select').addEventListener('change', (e) => {
     ui.sort = e.target.value;
+    ui.page = 1;
     refreshTracks();
   });
 
   $('search-input').addEventListener('input', debounce((e) => {
     ui.search = e.target.value.trim();
+    ui.page = 1;
     refreshTracks();
   }, 300));
 
@@ -280,11 +291,78 @@ function bindLibraryControls() {
     host.classList.toggle('hidden');
   });
 
+  // Cambiar la propia contraseña (diálogo)
+  bindChangePassword();
+
   $('btn-admin').addEventListener('click', () => { showView('admin'); showAdmin(); });
+  $('btn-change-pw').addEventListener('click', () => openChangePw());
+
+  // Paginación: botones "anteriores/siguientes 100"
+  $('page-prev').addEventListener('click', () => {
+    if (ui.page > 1) { ui.page -= 1; refreshTracks(); }
+  });
+  $('page-next').addEventListener('click', () => {
+    if (ui.has_next) { ui.page += 1; refreshTracks(); }
+  });
+
   $('btn-back-app').addEventListener('click', async () => {
     showView('app');
     await refreshMeta();
     await refreshTracks();
+  });
+}
+
+// ---------- Paginación (100 por página) ----------
+
+function paintPagination() {
+  const box = $('pagination');
+  const info = $('page-info');
+  const per = 100;
+  const start = (ui.page - 1) * per + 1;
+  const end = Math.min(ui.page * per, ui.total);
+  info.textContent = ui.total > 0
+    ? `${start}–${end} de ${ui.total}`
+    : `${ui.total} temas`;
+  $('page-prev').disabled = !ui.has_prev;
+  $('page-next').disabled = !ui.has_next;
+  box.classList.toggle('hidden', ui.total <= per); // se oculta si caben en una página
+}
+
+// ---------- Cambio de la propia contraseña ----------
+
+function openChangePw() {
+  const f = $('change-pw-form');
+  f.current.value = '';
+  f.new.value = '';
+  f.confirm.value = '';
+  $('change-pw-error').textContent = '';
+  $('change-pw-dialog').showModal();
+}
+
+function validateChangePwClientSide(f) {
+  if (f.new.value.length < 10) return 'La nueva contraseña debe tener al menos 10 caracteres.';
+  if (!/[a-z]/.test(f.new.value) || !/[A-Z]/.test(f.new.value) || !/[0-9]/.test(f.new.value) || !/[^a-zA-Z0-9]/.test(f.new.value)) {
+    return 'La contraseña necesita mayúscula, minúscula, dígito y símbolo.';
+  }
+  if (f.new.value !== f.confirm.value) return 'Las contraseñas no coinciden.';
+  return null;
+}
+
+function bindChangePassword() {
+  $('change-pw-cancel').addEventListener('click', () => $('change-pw-dialog').close());
+  $('change-pw-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    $('change-pw-error').textContent = '';
+    const f = e.target;
+    const clientErr = validateChangePwClientSide(f);
+    if (clientErr) { $('change-pw-error').textContent = clientErr; return; }
+    try {
+      await api.changePassword({ current: f.current.value, new: f.new.value });
+      $('change-pw-dialog').close();
+      toast('Contraseña cambiada correctamente.');
+    } catch (err) {
+      $('change-pw-error').textContent = err instanceof ApiError ? err.message : 'No se pudo cambiar la contraseña.';
+    }
   });
 }
 

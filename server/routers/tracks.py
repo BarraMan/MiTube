@@ -70,10 +70,29 @@ def list_tracks(
                         OR IFNULL(al.title,'') LIKE ? ESCAPE '\\')""")
         params += [like, like, like]
     sql = TRACK_SELECT + (" WHERE " + " AND ".join(where) if where else "")
+    # Conteo total (mismos filtros, sin la paginación) para la navegación
+    count_sql = (
+        "SELECT COUNT(*) AS n FROM tracks t "
+        "JOIN artists ar ON ar.id = t.artist_id "
+        "LEFT JOIN albums al ON al.id = t.album_id "
+        "LEFT JOIN genres g ON g.id = t.genre_id"
+    )
+    if where:
+        count_sql += " WHERE " + " AND ".join(where)
+    total = q1(count_sql, tuple(params))["n"]
     sql += f" ORDER BY {order} LIMIT ? OFFSET ?"
     params += [per_page, (page - 1) * per_page]
     rows = q(sql, tuple(params))
-    return {"tracks": [_track_dict(r) for r in rows], "page": page}
+    total_pages = (total + per_page - 1) // per_page if total else 0
+    return {
+        "tracks": [_track_dict(r) for r in rows],
+        "page": page,
+        "per_page": per_page,
+        "total": total,
+        "total_pages": total_pages,
+        "has_next": page < total_pages,
+        "has_prev": page > 1,
+    }
 
 
 @router.get("/tracks/{track_id}")

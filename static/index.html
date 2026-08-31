@@ -74,6 +74,7 @@
     </div>
     <div class="user-menu">
       <button id="btn-admin" class="btn-ghost hidden" title="Panel de administración">Admin</button>
+      <button id="btn-change-pw" class="btn-ghost" title="Cambiar mi contraseña">Cambiar contraseña</button>
       <span id="user-name" class="user-name"></span>
       <button id="btn-logout" class="btn-ghost" title="Cerrar sesión">Salir</button>
     </div>
@@ -127,6 +128,9 @@
             <button id="btn-cinema" class="btn-icon" title="Modo cinema" aria-label="Modo cinema">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/></svg>
             </button>
+            <button id="btn-fullscreen" class="btn-icon" title="Pantalla completa" aria-label="Pantalla completa">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+            </button>
           </div>
         </div>
       </div>
@@ -175,6 +179,11 @@
       </div>
       <ul id="playlist" class="playlist" role="list"></ul>
       <div id="list-empty" class="list-empty hidden">No hay resultados.</div>
+      <div id="pagination" class="pagination hidden" aria-label="Navegación de la lista">
+        <button id="page-prev" class="btn-ghost" type="button" title="Anteriores 100">← Anteriores</button>
+        <span id="page-info" class="muted small"></span>
+        <button id="page-next" class="btn-ghost" type="button" title="Siguientes 100">Siguientes →</button>
+      </div>
     </aside>
   </main>
 </div>
@@ -303,6 +312,25 @@
     </div>
     <div class="dialog-actions">
       <button type="button" id="edit-cancel" class="btn-ghost">Cancelar</button>
+      <button type="submit" class="btn-primary">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Diálogo de cambio de contraseña del usuario -->
+<dialog id="change-pw-dialog" class="edit-dialog">
+  <form id="change-pw-form" method="dialog" class="admin-form">
+    <h3>Cambiar contraseña</h3>
+    <div class="form-grid">
+      <label>Contraseña actual <input name="current" type="password" required autocomplete="current-password" maxlength="256"></label>
+      <label>Nueva contraseña <span class="hint">(mín. 10, mayúscula, minúscula, dígito y símbolo)</span>
+        <input name="new" type="password" required autocomplete="new-password" maxlength="256">
+      </label>
+      <label>Confirmar nueva contraseña <input name="confirm" type="password" required autocomplete="new-password" maxlength="256"></label>
+    </div>
+    <p id="change-pw-error" class="form-error" role="alert"></p>
+    <div class="dialog-actions">
+      <button type="button" id="change-pw-cancel" class="btn-ghost">Cancelar</button>
       <button type="submit" class="btn-primary">Guardar</button>
     </div>
   </form>

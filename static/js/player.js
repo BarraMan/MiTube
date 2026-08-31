@@ -81,6 +81,8 @@ export function initPlayer({ onTrackChange }) {
   el('btn-prev').addEventListener('click', prev);
   el('av-toggle').addEventListener('click', toggleMode);
   el('btn-cinema').addEventListener('click', toggleCinema);
+  el('btn-fullscreen').addEventListener('click', toggleFullscreen);
+  document.addEventListener('fullscreenchange', onFullscreenChange);
 
   // Atajos de teclado (ignorando campos de texto)
   document.addEventListener('keydown', (e) => {
@@ -115,6 +117,24 @@ function togglePlay() {
 function toggleCinema() {
   const on = el('layout').classList.toggle('cinema');
   store.set('mitube_cinema', on ? '1' : '0');
+}
+
+// ---------- Pantalla completa (sin afectar el modo cinema) ----------
+
+async function toggleFullscreen() {
+  try {
+    if (!document.fullscreenElement) {
+      await (el('player-shell').requestFullscreen?.() ?? document.body.requestFullscreen());
+    } else {
+      await document.exitFullscreen();
+    }
+  } catch { /* soporte opcional: no es crítico */ }
+}
+
+function onFullscreenChange() {
+  const on = !!document.fullscreenElement;
+  el('btn-fullscreen').classList.toggle('active', on);
+  el('layout').classList.toggle('fullscreen', on);
 }
 
 // ---------- Núcleo: carga y switch Audio/Video ----------

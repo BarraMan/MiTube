@@ -73,6 +73,7 @@ export const api = {
   login: (d) => request('/api/auth/login', { method: 'POST', body: d }),
   logout: () => request('/api/auth/logout', { method: 'POST' }),
   me: () => request('/api/auth/me'),
+  changePassword: (d) => request('/api/auth/change-password', { method: 'POST', body: d }),
   tracks: (params) => request(`/api/tracks?${new URLSearchParams(params)}`),
   track: (id) => request(`/api/tracks/${id}`),
   meta: () => request('/api/meta'),
