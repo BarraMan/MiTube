@@ -74,7 +74,9 @@ jobs:
           cache-from: type=gha
 
       - name: Sincronizar descripción en Docker Hub
+        # Requiere token con alcance "Read, Write, Delete"; si no, no bloquea el workflow
         if: env.DOCKERHUB_TOKEN_SET == 'true'
+        continue-on-error: true
         uses: peter-evans/dockerhub-description@v4
         with:
           username: ${{ env.DOCKERHUB_USERNAME }}
